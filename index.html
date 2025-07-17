@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI動物診断</title>
+<link rel="icon" type="image/png" href="a.png" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Zen Maru Gothic', sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      background: linear-gradient(135deg, #ffe0f0, #ffffff);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .popup {
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      padding: 40px 30px;
+      text-align: center;
+      width: 90%;
+      max-width: 360px;
+      animation: popIn 0.4s ease;
+    }     
+
+    @keyframes popIn {
+      0% {
+        transform: scale(0.85);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 10px;
+      color: #ff66aa;
+    }
+
+    .emoji {
+      font-size: 2.2rem;
+      margin-bottom: 30px;
+    }
+
+    .btn {
+      background: linear-gradient(to right, #ff9ac6, #ff66aa);
+      color: white;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 50px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 6px 0 #d95490;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 12px rgba(255, 105, 180, 0.3);
+    }
+
+    .btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 3px 0 #c04c7c;
+    }
+  </style>
+</head>
+<body>
+<div class="popup">
+  <h1>ai動物診断</h1>
+  <div class="emoji">🐶🐱🐵🐷</div>
+
+  <!-- 🔽 追加するコードここ！ -->
+  <div id="counter" style="margin-bottom: 20px; font-size: 1rem; color: #ff3399;">
+    アクセス数を計算中...
+  </div>
+
+  <button class="btn" onclick="goToStep1()">診断へ</button>
+</div>
+
+
+ <script>
+  function goToStep1() {
+    window.location.href = "step2.html";
+  }
+
+  // 🔽 追加コードここから！
+  const url = "https://script.google.com/macros/s/AKfycby_wkIlgcN3QNkKcdFTFaeZ1x6OysPGdFnZ54usi8Qt62s6QKXlXpPhgTeRWMARaKDh/exec";
+
+  fetch(url)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("counter").textContent =
+        `このサイトのアクセス数：${data.count}回`;
+    })
+    .catch(err => {
+      console.error("取得エラー:", err);
+      document.getElementById("counter").textContent = "取得エラー😢";
+    });
+</script>
+
+</body>
+</html>

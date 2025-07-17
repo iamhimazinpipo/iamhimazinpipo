@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI動物診断</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="a.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Zen Maru Gothic', sans-serif;
+      background: linear-gradient(to bottom right, #ffe4ec, #ffffff);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      overflow-y: auto;
+      padding: 20px 0;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      padding: 20px;
+      width: 92%;
+      max-width: 360px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+      color: #ff69b4;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin: 8px 0;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      font-size: 0.9rem;
+    }
+
+    .button {
+      background: linear-gradient(to bottom right, #ff99cc, #ff66b2);
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(255,105,180,0.4);
+      font-size: 1rem;
+      font-weight: bold;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    .button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .emoji-list {
+      font-size: 1.5rem;
+      margin-top: 10px;
+      line-height: 1.8;
+    }
+
+    img.preview {
+      max-width: 100%;
+      margin-top: 10px;
+      border-radius: 10px;
+    }
+
+    video {
+      width: 100%;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+
+    .warning-text {
+      color: red;
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
+
+    .status-icon {
+      font-size: 1.5rem;
+      margin-bottom: 5px;
+      user-select: none;
+      display: none;
+    }
+
+    .popup-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      display: none;
+    }
+
+    .popup-box {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    .popup-box p {
+      margin-bottom: 20px;
+      font-size: 1rem;
+    }
+
+    .popup-box button {
+      background: #ff66b2;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .emoji-title {
+      font-weight: bold;
+      font-size: 1rem;
+      margin-top: 20px;
+      color: #ff69b4;
+    }
+
+    .sample-title-ok {
+      color: green;
+      font-weight: bold;
+      margin: 5px 0;
+      font-size: 0.95rem;
+    }
+
+    .sample-title-ng {
+      color: red;
+      font-weight: bold;
+      margin: 5px 0;
+      font-size: 0.95rem;
+    }
+
+    .sample-images {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 5px;
+      margin-bottom: 10px;
+    }
+
+    .sample-images img {
+      width: 150px;
+      height: 225px;
+      object-fit: cover;
+      border-radius: 10px;
+    }
+
+    .sns-label {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 10px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>診断準備画面！</h1>
+
+    <input type="text" id="nickname" maxlength="20" placeholder="ニックネーム（20文字以内）" required />
+    <select id="gender" required>
+      <option value="">性別を選択</option>
+      <option value="male">男</option>
+      <option value="female">女</option>
+    </select>
+    <select id="age" required></select>
+    <select id="prefecture" required>
+      <option value="">住んでいる県を選択</option>
+      <option>北海道</option><option>青森県</option><option>岩手県</option><option>宮城県</option>
+      <option>秋田県</option><option>山形県</option><option>福島県</option><option>茨城県</option>
+      <option>栃木県</option><option>群馬県</option><option>埼玉県</option><option>千葉県</option>
+      <option>東京都</option><option>神奈川県</option><option>新潟県</option><option>富山県</option>
+      <option>石川県</option><option>福井県</option><option>山梨県</option><option>長野県</option>
+      <option>岐阜県</option><option>静岡県</option><option>愛知県</option><option>三重県</option>
+      <option>滋賀県</option><option>京都府</option><option>大阪府</option><option>兵庫県</option>
+      <option>奈良県</option><option>和歌山県</option><option>鳥取県</option><option>島根県</option>
+      <option>岡山県</option><option>広島県</option><option>山口県</option><option>徳島県</option>
+      <option>香川県</option><option>愛媛県</option><option>高知県</option><option>福岡県</option>
+      <option>佐賀県</option><option>長崎県</option><option>熊本県</option><option>大分県</option>
+      <option>宮崎県</option><option>鹿児島県</option><option>沖縄県</option>
+    </select>
+    <div style="font-size: 0.69rem; color: #000000; margin-top: 10px;">
+      フォロバしてほしい、snsとアカウントがある場合は教えてください。<br>
+      ない場合は特に無しを選択してください。
+    </div>
+    <select id="snsType" required>
+      <option value="">SNSを選択</option>
+      <option value="Instagram">Instagram</option>
+      <option value="TikTok">TikTok</option>
+      <option value="特になし">特になし</option>
+    </select>
+    <input type="text" id="snsAccount" placeholder="特にない場合は、特になしと記入してください。" required />
+
+    <button class="button" onclick="openCamera()">📸 カメラで写真を撮る</button>
+    <video id="cameraPreview" autoplay playsinline style="display:none;"></video>
+    <canvas id="cameraCanvas" style="display:none;"></canvas>
+    <img id="preview" class="preview" src="#" alt="プレビュー" style="display:none;" />
+    <button id="captureBtn" class="button" style="display:none;" onclick="capturePhoto()">📷 撮影して確定</button>
+
+    <div class="emoji-title">診断される可能性のある動物</div>
+    <div class="emoji-list">🐵🦍🐶🐺🦊🦝🐱🦁🐯🐴<br>🐮🐷🐗🐏🦒🐘🦏🦛🐭🐹<br>🦫🦔🦇🐻🐻‍❄️🐨🐰🐿️🦄🦓</div>
+    <div id="iconBox" class="status-icon">❌</div>
+    <div id="uploadWarning" class="warning-text" style="display: none;">
+      画像アップロード中です！バツ印が消えてから、診断開始ボタンを押してください！
+    </div>
+    <button class="button" id="startButton" onclick="startDiagnosis()" disabled>診断開始</button>
+
+    <div style="font-size: 0.75rem; color: #777; margin-top: 10px;">
+      診断を開始したらプライバシーポリシーと利用規約に同意したものとします。
+    </div>
+    <button onclick="location.href='step1.html'" style="margin-top: 8px; font-size: 0.8rem; background: none; border: none; color: #007BFF; text-decoration: underline; cursor: pointer;">
+      プライバシーポリシーと利用規約
+    </button>
+  </div>
+
+  <div id="popup" class="popup-overlay">
+    <div class="popup-box">
+      <p>画像サイズを圧縮します！<br>診断には影響ありません。</p>
+      <button onclick="closePopup()">OK</button>
+    </div>
+  </div>
+
+<script>
+  const ageSelect = document.getElementById('age');
+  for(let i=0; i<=100; i++) {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = i + '歳';
+    ageSelect.appendChild(opt);
+  }
+
+  const preview = document.getElementById('preview');
+  const startButton = document.getElementById('startButton');
+  const iconBox = document.getElementById('iconBox');
+  const uploadWarning = document.getElementById('uploadWarning');
+  const popup = document.getElementById('popup');
+
+  const cloudName = "dywhxia8m";
+  const uploadPreset = "mi_default";
+  let uploadedImageUrl = "";
+  let isUploading = false;
+  let stream;
+
+  function closePopup() {
+    popup.style.display = "none";
+  }
+
+  async function openCamera() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user" },
+        audio: false
+      });
+      document.getElementById("cameraPreview").srcObject = stream;
+      document.getElementById("cameraPreview").style.display = "block";
+      document.getElementById("captureBtn").style.display = "inline-block";
+    } catch (error) {
+      alert("カメラの使用を許可してください。");
+    }
+  }
+
+  async function capturePhoto() {
+    const video = document.getElementById("cameraPreview");
+    const canvas = document.getElementById("cameraCanvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.9));
+    const imageUrl = URL.createObjectURL(blob);
+    preview.src = imageUrl;
+    preview.style.display = "block";
+
+    stream.getTracks().forEach(track => track.stop());
+    document.getElementById("cameraPreview").style.display = "none";
+    document.getElementById("captureBtn").style.display = "none";
+
+    const file = new File([blob], "captured.jpg", { type: "image/jpeg" });
+
+    startButton.disabled = true;
+    iconBox.style.display = "block";
+    iconBox.textContent = "❌";
+    uploadWarning.style.display = "block";
+    isUploading = true;
+
+    if (file.size > 1024 * 1024) {
+      popup.style.display = "flex";
+      const compressed = await compressImage(file, 0.8);
+      await uploadToCloudinary(compressed);
+    } else {
+      await uploadToCloudinary(file);
+    }
+
+    if (uploadedImageUrl) {
+      startButton.disabled = false;
+      iconBox.style.display = "none";
+      uploadWarning.style.display = "none";
+      isUploading = false;
+    }
+  }
+
+  function compressImage(file, quality) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0);
+          canvas.toBlob((blob) => {
+            resolve(new File([blob], file.name, { type: blob.type }));
+          }, "image/jpeg", quality);
+        };
+      };
+    });
+  }
+
+  async function uploadToCloudinary(file) {
+    const nickname = document.getElementById('nickname').value.trim();
+    const gender = document.getElementById('gender').value;
+    const age = document.getElementById('age').value;
+    const prefecture = document.getElementById('prefecture').value;
+    const snsType = document.getElementById('snsType').value;
+    const snsAccount = document.getElementById('snsAccount').value.trim();
+
+    const folderName = gender === "male" ? "男" : "女";
+
+    const url = `https://api.cloudinary.com/v1_1/${cloudName}/upload`;
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", uploadPreset);
+    formData.append("folder", folderName);
+    formData.append("tags", `ニックネーム:${nickname},性別:${gender},年齢:${age},都道府県:${prefecture},SNS:${snsType},アカウント:${snsAccount}`);
+
+    try {
+      const res = await fetch(url, { method: "POST", body: formData });
+      const data = await res.json();
+      uploadedImageUrl = data.secure_url;
+    } catch (err) {
+      console.error("アップロード失敗:", err);
+      alert("画像のアップロードに失敗しました！");
+    }
+  }
+
+  function startDiagnosis() {
+    const nickname = document.getElementById('nickname').value.trim();
+    const gender = document.getElementById('gender').value;
+    const age = document.getElementById('age').value;
+    const prefecture = document.getElementById('prefecture').value;
+    const snsType = document.getElementById('snsType').value;
+    const snsAccount = document.getElementById('snsAccount').value.trim();
+
+    if (!nickname || !gender || !age || !prefecture || !snsType || !snsAccount || !uploadedImageUrl || isUploading) {
+      alert("すべての項目を入力・選択・アップロードしてください！");
+      return;
+    }
+
+    localStorage.setItem("nickname", nickname);
+    localStorage.setItem("gender", gender);
+    localStorage.setItem("age", age);
+    localStorage.setItem("prefecture", prefecture);
+    localStorage.setItem("snsType", snsType);
+    localStorage.setItem("snsAccount", snsAccount);
+    localStorage.setItem("uploadedImageUrl", uploadedImageUrl);
+
+    window.location.href = "step3.html";
+  }
+</script>
+</body>
+</html>

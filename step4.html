@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI動物診断</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="a.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Zen Maru Gothic', sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      background: linear-gradient(135deg, #ffe0f0, #ffffff);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .popup {
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      padding: 40px 30px;
+      text-align: center;
+      width: 92%;
+      max-width: 360px;
+      animation: popIn 0.4s ease;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.85); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      color: #ff66aa;
+      margin-bottom: 10px;
+    }
+
+    .result {
+      font-size: 4rem;
+      margin: 20px 0;
+    }
+
+    .match {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .confetti {
+      font-size: 2rem;
+      animation: fadeOut 3s forwards;
+    }
+
+    @keyframes fadeOut {
+      0% { opacity: 1; }
+      100% { opacity: 0; display: none; }
+    }
+
+    .error-popup {
+      background: #fff3f3;
+      color: #ff4444;
+      border: 2px solid #ff8888;
+      border-radius: 15px;
+      padding: 20px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .button {
+      background: linear-gradient(to right, #ff9ac6, #ff66aa);
+      color: white;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 50px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-top: 20px;
+      box-shadow: 0 6px 0 #d95490;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-block;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 12px rgba(255, 105, 180, 0.3);
+    }
+
+    .button:active {
+      transform: translateY(2px);
+      box-shadow: 0 3px 0 #c04c7c;
+    }
+  </style>
+</head>
+<body>
+  <div class="popup">
+    <h1>診断結果</h1>
+    <div class="confetti" id="confetti">🎉🎉🎉</div>
+    <div class="result" id="result">🐷</div>
+    <div class="match" id="match">マッチ度: 100%</div>
+
+    <div class="error-popup" id="errorPopup">
+      <p><strong>⚠️顔と体格がはっきりと写っていないため、エラーが発生しました。</strong><br>次回は、顔と体格がはっきりと写っている写真をアップロードしてください。⚠️</p>
+      <button class="button" onclick="closeError()">OK</button>
+    </div>
+
+    <button class="button" onclick="retry()">再診断</button>
+  </div>
+
+<script>
+  // ページリロードならstep2へリダイレクト
+  if (performance.navigation.type === 1 || performance.getEntriesByType("navigation")[0].type === "reload") {
+    window.location.href = "step2.html";
+  }
+
+  const resultEl = document.getElementById("result");
+  const matchEl = document.getElementById("match");
+  const errorPopup = document.getElementById("errorPopup");
+
+  const animals = ["🐵","🦍","🐶","🐺","🦊","🦝","🐱","🦁","🐯","🐴","🦄","🦓","🐮","🐷","🐗","🐏","🦒","🐘","🦏","🦛","🐭","🐹","🐰","🐿️","🦫","🦔","🦇","🐻","🐻‍❄️","🐨","🐼"];
+
+  // ユーザー識別用フィンガープリントを生成
+  function getFingerprint() {
+    return btoa(navigator.userAgent + Intl.DateTimeFormat().resolvedOptions().timeZone);
+  }
+
+  const fingerprint = getFingerprint();
+  const sessionKey = "fp_" + fingerprint;
+
+  // --- ✅ ここから診断回数とリセット処理の追加 ---
+  const diagnosisDataKey = "diagnosis_" + fingerprint;
+  const now = Date.now();
+  const data = JSON.parse(localStorage.getItem(diagnosisDataKey)) || { count: 0, timestamp: 0 };
+
+  // 10分経過したらカウントをリセット
+  if (now - data.timestamp > 10 * 60 * 1000) {
+    data.count = 0;
+  }
+
+  data.count += 1;
+  data.timestamp = now;
+  localStorage.setItem(diagnosisDataKey, JSON.stringify(data));
+  // --- ✅ ここまで診断カウント管理 ---
+
+  // 初回（sessionStorage）処理：豚＋エラーポップアップ
+  const visited = sessionStorage.getItem(sessionKey);
+  if (!visited) {
+    resultEl.textContent = "🐷";
+    matchEl.textContent = "マッチ度: 100%";
+    errorPopup.style.display = "block";
+    sessionStorage.setItem(sessionKey, "true");
+  } else {
+    const animal = animals[Math.floor(Math.random() * animals.length)];
+    const match = Math.floor(Math.random() * 51) + 50;
+    resultEl.textContent = animal;
+    matchEl.textContent = `マッチ度: ${match}%`;
+  }
+
+  function closeError() {
+    errorPopup.style.display = "none";
+  }
+
+  function retry() {
+    window.location.href = "step2.html";
+  }
+</script>
+</body>
+</html>
